@@ -29,6 +29,11 @@ exports.sendIncomingCallAlert = functions.firestore
                 title: 'Incoming Call',
                 body: `You have an incoming call from ${callerName}!`
             },
+            android: {
+                notification: {
+                    clickAction: 'FLUTTER_NOTIFICATION_CLICK'
+                }
+            },
             webpush: {
                 fcmOptions: {
                     link: "/"

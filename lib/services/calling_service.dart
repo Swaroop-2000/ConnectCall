@@ -3,6 +3,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_webrtc/flutter_webrtc.dart';
+import 'package:flutter_background/flutter_background.dart';
 import '../models/call_model.dart';
 
 final callingServiceProvider = Provider<CallingService>((ref) {
@@ -514,6 +515,19 @@ class CallingService {
 
     if (!isScreenSharing) {
       try {
+        // On mobile, start a foreground service so Android doesn't kill us
+        if (!kIsWeb) {
+          const androidConfig = FlutterBackgroundAndroidConfig(
+            notificationTitle: 'ConnectCall Screen Share',
+            notificationText: 'Sharing your screen...',
+            notificationImportance: AndroidNotificationImportance.normal,
+          );
+          final hasPermissions = await FlutterBackground.initialize(androidConfig: androidConfig);
+          if (hasPermissions) {
+            await FlutterBackground.enableBackgroundExecution();
+          }
+        }
+
         final displayMedia = await navigator.mediaDevices.getDisplayMedia({
           'video': true,
           'audio': false,
@@ -537,6 +551,10 @@ class CallingService {
         };
       } catch (e) {
         debugPrint('Screen share error: $e');
+        // Disable background execution on error
+        if (!kIsWeb) {
+          try { await FlutterBackground.disableBackgroundExecution(); } catch (_) {}
+        }
       }
     } else {
       await _revertToCamera();
@@ -556,6 +574,11 @@ class CallingService {
     isScreenSharing = false;
     onScreenShareStateChanged?.call(false);
     onLocalStream?.call(localStream!);
+
+    // Stop the foreground service that was keeping us alive
+    if (!kIsWeb) {
+      try { await FlutterBackground.disableBackgroundExecution(); } catch (_) {}
+    }
   }
 
   void _startStatsTimer() {
