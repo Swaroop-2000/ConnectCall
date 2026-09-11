@@ -1,0 +1,83 @@
+{
+  "project_info": {
+    "project_number": "674297555728",
+    "firebase_url": "https://eye-disease-prediction-5b87a-default-rtdb.firebaseio.com",
+    "project_id": "eye-disease-prediction-5b87a",
+    "storage_bucket": "eye-disease-prediction-5b87a.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:674297555728:android:1445f7d24982382cab5395",
+        "android_client_info": {
+          "package_name": "com.example.connect_call"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "674297555728-keso040hmhohier21i06jgbkee98k6fh.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBccM4zN79pFGeK_-po_simQk96DdEOHPU"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "674297555728-10ru0jarkte1h5co03os1vcarpq3sjq0.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "674297555728-h3nu5uhebh20a2ohiec5o311hv5aaioe.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.eyedisease.prediction"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:674297555728:android:6da97ca856788a49ab5395",
+        "android_client_info": {
+          "package_name": "com.eyedisease.prediction"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "674297555728-keso040hmhohier21i06jgbkee98k6fh.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBccM4zN79pFGeK_-po_simQk96DdEOHPU"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "674297555728-10ru0jarkte1h5co03os1vcarpq3sjq0.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "674297555728-h3nu5uhebh20a2ohiec5o311hv5aaioe.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.eyedisease.prediction"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
