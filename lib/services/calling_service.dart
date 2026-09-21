@@ -3,7 +3,6 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_webrtc/flutter_webrtc.dart';
-import 'package:flutter_background/flutter_background.dart';
 import '../models/call_model.dart';
 
 final callingServiceProvider = Provider<CallingService>((ref) {
@@ -25,6 +24,7 @@ class CallingService {
   final List<StreamSubscription> _subscriptions = [];
 
   bool isScreenSharing = false;
+  bool isAwaitingScreenCapture = false; // suppresses disconnect during permission dialog
   MediaStream? _cameraStream;
   int networkQuality = 0; // 0: Good, 1: Fair, 2: Poor
   Function(int quality)? onNetworkQualityChanged;
@@ -113,7 +113,11 @@ class CallingService {
     };
 
     peerConnection?.onConnectionState = (RTCPeerConnectionState state) {
-      onCallStateChanged?.call(state.name);
+      if (!isAwaitingScreenCapture ||
+          (state != RTCPeerConnectionState.RTCPeerConnectionStateDisconnected &&
+           state != RTCPeerConnectionState.RTCPeerConnectionStateFailed)) {
+        onCallStateChanged?.call(state.name);
+      }
       if (state == RTCPeerConnectionState.RTCPeerConnectionStateConnected) {
         _callStartTime = DateTime.now();
         _startStatsTimer();
@@ -126,7 +130,9 @@ class CallingService {
       } else if (state == RTCPeerConnectionState.RTCPeerConnectionStateFailed ||
           state == RTCPeerConnectionState.RTCPeerConnectionStateDisconnected ||
           state == RTCPeerConnectionState.RTCPeerConnectionStateClosed) {
-        endCall();
+        if (!isAwaitingScreenCapture) {
+          endCall();
+        }
       }
     };
 
@@ -515,24 +521,16 @@ class CallingService {
 
     if (!isScreenSharing) {
       try {
-        // On mobile, start a foreground service so Android doesn't kill us
-        if (!kIsWeb) {
-          const androidConfig = FlutterBackgroundAndroidConfig(
-            notificationTitle: 'ConnectCall Screen Share',
-            notificationText: 'Sharing your screen...',
-            notificationImportance: AndroidNotificationImportance.normal,
-          );
-          final hasPermissions = await FlutterBackground.initialize(androidConfig: androidConfig);
-          if (hasPermissions) {
-            await FlutterBackground.enableBackgroundExecution();
-          }
-        }
+        // Set flag BEFORE showing the system permission dialog.
+        // This prevents the brief AppLifecycleState.paused from triggering call end.
+        isAwaitingScreenCapture = true;
 
         final displayMedia = await navigator.mediaDevices.getDisplayMedia({
           'video': true,
           'audio': false,
         });
 
+        isAwaitingScreenCapture = false;
         _cameraStream = localStream;
 
         final screenTrack = displayMedia.getVideoTracks().first;
@@ -550,11 +548,8 @@ class CallingService {
           _revertToCamera();
         };
       } catch (e) {
+        isAwaitingScreenCapture = false;
         debugPrint('Screen share error: $e');
-        // Disable background execution on error
-        if (!kIsWeb) {
-          try { await FlutterBackground.disableBackgroundExecution(); } catch (_) {}
-        }
       }
     } else {
       await _revertToCamera();
@@ -574,11 +569,6 @@ class CallingService {
     isScreenSharing = false;
     onScreenShareStateChanged?.call(false);
     onLocalStream?.call(localStream!);
-
-    // Stop the foreground service that was keeping us alive
-    if (!kIsWeb) {
-      try { await FlutterBackground.disableBackgroundExecution(); } catch (_) {}
-    }
   }
 
   void _startStatsTimer() {

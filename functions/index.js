@@ -26,18 +26,21 @@ exports.sendIncomingCallAlert = functions.firestore
 
         const message = {
             notification: {
-                title: 'Incoming Call',
-                body: `You have an incoming call from ${callerName}!`
+                title: '📞 Incoming Call',
+                body: `${callerName} is calling you...`
             },
             android: {
+                priority: 'high',
                 notification: {
-                    clickAction: 'FLUTTER_NOTIFICATION_CLICK'
+                    clickAction: 'FLUTTER_NOTIFICATION_CLICK',
+                    channelId: 'incoming_calls',
+                    sound: 'default'
                 }
             },
-            webpush: {
-                fcmOptions: {
-                    link: "/"
-                }
+            data: {
+                type: 'incoming_call',
+                callerName: callerName,
+                calleeId: calleeId
             },
             token: userData.fcmToken
         };
